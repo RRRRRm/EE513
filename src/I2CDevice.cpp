@@ -10,6 +10,7 @@
 #include<linux/i2c-dev.h>
 using namespace std;
 
+// Convert given value to hex and display in two digits
 #define HEX(x) setw(2) << setfill('0') << hex << (int)(x)
 
 namespace EE513 {
@@ -36,11 +37,12 @@ namespace EE513 {
 		string name;
 		if(this->bus==0) name = I2C_0;
 		else name = I2C_1;
-
+		// Open up the I2C bus
 		if((this->file=::open(name.c_str(), O_RDWR)) < 0){
 			perror("I2C: failed to open the bus\n");
 			return 1;
 		}
+		// Connect to the device
 		if(ioctl(this->file, I2C_SLAVE, this->device) < 0){
 			perror("I2C: Failed to connect to the device\n");
 			return 1;
@@ -59,6 +61,7 @@ namespace EE513 {
 		unsigned char buffer[2];
 		buffer[0] = registerAddress;
 		buffer[1] = value;
+		// Write the register address and the value to the device
 		if(::write(this->file, buffer, 2)!=2){
 			perror("I2C: Failed write to the device\n");
 			return 1;
@@ -129,6 +132,7 @@ namespace EE513 {
 		unsigned char *registers = this->readRegisters(number);
 		for(int i=0; i<(int)number; i++){
 			cout << HEX(*(registers+i)) << " ";
+			// Insert a return character after every 16 values
 			if (i%16==15) cout << endl;
 		}
 		cout << dec;
