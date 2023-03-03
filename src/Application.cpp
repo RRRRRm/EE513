@@ -6,14 +6,27 @@ using namespace EE513;
 
 #define DS3231_I2C_ADDRESS 0x68
 
+int a=0;
+
+// Set the time on the DS3231 RTC
+void setTime(I2CDevice rtc, int seconds, int minutes, int hours, int day, int date, int month, int year){
+	rtc.writeRegister(0, seconds);
+	rtc.writeRegister(1, minutes);
+	rtc.writeRegister(2, hours);
+	rtc.writeRegister(3, day);
+	rtc.writeRegister(4, date);
+	rtc.writeRegister(5, month);
+	rtc.writeRegister(6, year);
+}
+
 int main(void){
 	I2CDevice rtc(1, DS3231_I2C_ADDRESS);
 	rtc.writeRegister(0x0e, 0); // clear the alarm flags
 	// read and display current time and date
 	unsigned char* time = rtc.readRegisters(7);
 	cout << "Current time: ";
-	cout << (int)(time[2] & 0x1f) << ":";
-	cout << (int)(time[1] & 0x3f) << ":";
+	cout << (int)(time[2] & 0x1f) << ":"; // 0x1f in binary is 0001 1111
+	cout << (int)(time[1] & 0x3f) << ":"; // 0x3f in binary is 0011 1111
 	cout << (int)(time[0] & 0x3f) << endl;
 	cout << "Current date: ";
 	cout << (int)(time[4] & 0x3f) << "/";
