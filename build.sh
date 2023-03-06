@@ -21,7 +21,7 @@ function upload() {
 function compile() {
 	echo '--------------------- Compiling on raspberry pi ---------------------'
 	# compile the file on raspberry pi via ssh
-	ssh $RPI_USER@$RPI_IP "cd $RPI_PATH;make clean; make"
+	ssh $RPI_USER@$RPI_IP "cd $RPI_PATH;make clean; make $PROGNAME"
 }
 
 function run() {
@@ -31,14 +31,16 @@ function run() {
 }
 
 function help() {
-	echo 'Usage: ./build.sh [options] [RPI_IP]'
+	echo 'Usage: ./build.sh [options]'
 	echo 'Options:'
+	echo '  -t [TARGET]: specify target (default: rtcapp)]'
+	echo '  -a [ADDRESS]: specify RPi IP address (default: raspberrypi.lan)]'
 	echo '  -u: upload'
 	echo '  -c: compile'
 	echo '  -r: run'
 	echo '  -h: help'
 	echo 'Example:'
-	echo '  ./build.sh -ucr'
+	echo '  ./build.sh -t rtccmd -a 192.168.10.200' -ucr 
 }
 
 # Check if there is any argument
@@ -47,14 +49,13 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-# Last argument is the RPi IP address
-# If no argument is given, use the default value
-tmp=${@: -1}
-if [[ $tmp != -* ]]; then
-	RPI_IP=$tmp
+# If no argument is given, print help
+if [ $# -eq 0 ]; then
+	help
+	exit 1
 fi
 
-while getopts ":ucrh" opt; do
+while getopts ":ucra:t:h" opt; do
 	case $opt in
 	u)
 		upload
@@ -64,6 +65,12 @@ while getopts ":ucrh" opt; do
 		;;
 	r)
 		run
+		;;
+	t)
+		PROGNAME=$OPTARG
+		;;
+	a)
+		RPI_IP=$OPTARG
 		;;
 	h)
 		help

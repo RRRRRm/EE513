@@ -8,4 +8,7 @@ bin=$(echo "obase=2; ibase=16; $hex" | bc)
 # Show leading zeros
 bin=$(printf "%08d" $bin)
 
-echo $bin
+# Convert hex to decimal
+dec=$(echo "obase=10; ibase=16; $hex" | bc)
+
+echo $bin $dec 0x$hex
