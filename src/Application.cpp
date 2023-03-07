@@ -24,22 +24,44 @@ int main(void) {
   // get system time, convert to hours, minutes, seconds
   time_t now = time(0);
   tm *ltm = localtime(&now);
+	// Print time
+	cout << "System time: ";
+	rtc.print_tm(ltm);
+	// set time
 	rtc.set(*ltm);
+	tm *rtcTime = new tm();
+	rtc.get(rtcTime);
+	cout << "RTC time: ";
+	rtc.print_tm(rtcTime);
 
-  // read Date
-  cout << "Current date: ";
-  cout << (int)(rtc.getMainYear()) << "/";
-  cout << (int)(rtc.getMonth(DS3231_MONTH_CENTURY)) << "/";
-  cout << (int)(rtc.getDate(DS3231_DAY)) << endl;
+	rtc.printAlarm1();
+	// set alarm and test interrupt signal
+	rtc.resetAlarm1Status();
+	rtc.setAlarm1(EE513::AlarmType_Second,	ltm->tm_sec, ((ltm->tm_min)+2)%60, ltm->tm_hour, ltm->tm_mday);
+	// set INTCN bit (bit2) to enable interrupt
+	rtc.setBit(DS3231_CONTROL, 2, true);
+	rtc.printAlarm1();
+	
+	cout << "Waiting for alarm..." << endl;
+	while(true){
+		unsigned char status = rtc.readRegister(DS3231_CONTROL_STATUS);
 
-  // read and display current time and date
-  while (1) {
-    cout << "Current time: ";
-    cout << (int)(rtc.getHour24(DS3231_HOUR)) << ":";
-    cout << (int)(rtc.getSecMin(DS3231_MINUTE)) << ":";
-    cout << (int)(rtc.getSecMin(DS3231_SECOND)) << endl;
-    sleep(1);
-  }
+		if(status & 0x01){
+			cout << "Alarm triggered!" << endl;
+			// add code here to drive an LED or perform other actions on alarm
+		}
+		sleep(1);
+	}
+  //// read and display current time and date
+  //while (1) {
+  //  cout << "Current time: ";
+  //  cout << (int)(rtc.getHour24(DS3231_HOUR)) << ":";
+  //  cout << (int)(rtc.getSecMin(DS3231_MINUTE)) << ":";
+  //  cout << (int)(rtc.getSecMin(DS3231_SECOND)) << endl;
+  //  sleep(1);
+  //}
+
+
 
   //// set alarm and test interrupt signal
   // rtc.writeRegister(0x0d, 0x0a); // set alarm 1 to trigger when seconds match

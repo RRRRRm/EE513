@@ -27,14 +27,14 @@
 
 namespace EE513 {
 
-  enum AlarmType {
-    AlarmType_OncePerSecond = 0x0f,        // 1111b 0x0f
-    AlarmType_Second = 0x0e,               // 1110b 0x0e
-    AlarmType_MinuteSecond = 0x0c,         // 1100b 0x0c
-    AlarmType_HourMinuteSecond = 0x08,     // 1000b 0x08
-    AlarmType_DateHourMinuteSecond = 0x00, // 0000b 0x00
-    AlarmType_DayHourMinuteSecond = 0x10   // 10000b 0x10
-  };
+enum AlarmType {
+  AlarmType_OncePerSecond = 0x0f,        // 0 1111b 0x0f
+  AlarmType_Second = 0x0e,               // 0 1110b 0x0e
+  AlarmType_MinuteSecond = 0x0c,         // 0 1100b 0x0c
+  AlarmType_HourMinuteSecond = 0x08,     // 0 1000b 0x08
+  AlarmType_DateHourMinuteSecond = 0x00, // 0 0000b 0x00
+  AlarmType_DayHourMinuteSecond = 0x10   // 1 0000b 0x10
+};
 
 /**
  * @class DS3231
@@ -45,7 +45,7 @@ public:
   DS3231();
   virtual ~DS3231();
 
-	void setBit(uint8_t reg, uint8_t bit, bool value);
+  void setBit(uint8_t reg, uint8_t bit, bool value);
   uint8_t getSecMin(uint8_t reg);
   void setSecMin(uint8_t reg, uint8_t second);
   void set12HourMode(uint8_t reg, bool mode);
@@ -62,19 +62,27 @@ public:
   void setMainYeay(uint32_t year);
   float getTemperature();
 
+  void print_tm(struct tm *time);
+  void printAlarmType(AlarmType *type);
   void set(struct tm time);
   void get(struct tm *time);
 
-  void setAlarm1(AlarmType type, struct tm time);
-  void setAlarm2(AlarmType type, struct tm time);
-	void getAlarm1(AlarmType &type, struct tm *time);
-	void getAlarm2(AlarmType &type, struct tm *time);
-	bool hasAlarm1();
-	bool hasAlarm2();
-	void clearAlarm1();
-	void clearAlarm2();
-	void printAlarm1();
-	void printAlarm2();
+  void setAlarm1(AlarmType type, uint8_t sec, uint8_t min, uint8_t hour,
+                 uint8_t day_date);
+  void setAlarm2(AlarmType type, uint8_t min, uint8_t hour, uint8_t day_date);
+  void getAlarm1(AlarmType *type, uint8_t *sec, uint8_t *min, uint8_t *hour,
+                 uint8_t *day_date);
+  void getAlarm2(AlarmType *type, uint8_t *min, uint8_t *hour,
+                 uint8_t *day_date);
+  bool hasAlarm1();
+  bool hasAlarm2();
+  void resetAlarm1Status();
+  void resetAlarm2Status();
+  void printAlarm1();
+  void printAlarm2();
+  void setSquareWave(uint8_t frequency);
+  void enableSquareWave();
+  void disableSquareWave();
 
   //// 读取并显示当前 RTC 模块时间和日期
   //// Read and display the current time and date from the RTC module
