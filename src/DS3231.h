@@ -25,6 +25,11 @@
 #define DS3231_TEMP_MSB 0x11
 #define DS3231_TEMP_LSB 0x12
 
+#define SQW_RATE_1HZ 0  // 0000b
+#define SQW_RATE_1KHZ 2 // 0010b
+#define SQW_RATE_4KHZ 4 // 0100b
+#define SQW_RATE_8KHZ 6 // 0110b
+
 namespace EE513 {
 
 enum AlarmType {

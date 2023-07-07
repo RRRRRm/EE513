@@ -256,6 +256,10 @@ float DS3231::getTemperature() {
   return temp;
 }
 
+/**
+ * Set the time on the DS3231 rtc
+ * @param time The time struct to set
+ */
 void DS3231::set(struct tm time) {
   this->setSecMin(DS3231_SECOND, time.tm_sec);
   this->setSecMin(DS3231_MINUTE, time.tm_min);
@@ -266,6 +270,10 @@ void DS3231::set(struct tm time) {
   this->setMainYeay(time.tm_year + 1900);
 }
 
+/**
+ * Get the time from the DS3231 rtc
+ * @param time The time struct to fill
+ */
 void DS3231::get(struct tm *time) {
   time->tm_sec = this->getSecMin(DS3231_SECOND);
   time->tm_min = this->getSecMin(DS3231_MINUTE);
@@ -276,8 +284,17 @@ void DS3231::get(struct tm *time) {
   time->tm_year = this->getMainYear() - 1900;
 }
 
+/**
+ * Set the alarm time on the DS3231 rtc
+ * @param type The alarm type, see AlarmType enum
+ * @param sec The second
+ * @param min The minute
+ * @param hour The hour
+ * @param day_week The day or week
+ */
 void DS3231::setAlarm1(AlarmType type, uint8_t sec, uint8_t min,
 											 uint8_t hour, uint8_t day_week) {
+	DS3231::resetAlarm1Status(); // Clear the alarm status
   // Set the alarm type bits to first bit of DS3231_ALARM1_SECOND,
   // DS3231_ALARM1_MINUTE, DS3231_ALARM1_HOUR, DS3231_ALARM1_DAY
   unsigned int typeMask = (unsigned int)type;
@@ -311,6 +328,7 @@ void DS3231::setAlarm1(AlarmType type, uint8_t sec, uint8_t min,
 
 void DS3231::setAlarm2(AlarmType type, uint8_t minute, uint8_t hour,
                        uint8_t day_week) {
+	DS3231::resetAlarm2Status(); // Clear the alarm status
   // Set the alarm type bits to first bit of DS3231_ALARM2_MINUTE,
   // DS3231_ALARM2_HOUR, DS3231_ALARM2_DAY
   unsigned int typeMask = (unsigned int)type;
@@ -342,6 +360,14 @@ void DS3231::setAlarm2(AlarmType type, uint8_t minute, uint8_t hour,
                       this->readRegister(DS3231_CONTROL) | 0x02);
 }
 
+/**
+ * Get the alarm time from the DS3231 rtc
+ * @param type The alarm type, see AlarmType enum
+ * @param sec The second
+ * @param min The minute
+ * @param hour The hour
+ * @param day_week The day or week
+ */
 void DS3231::getAlarm1(AlarmType *type, uint8_t *sec, uint8_t *min,
                        uint8_t *hour, uint8_t *day_date) {
   // Get the alarm type bits from first bit of DS3231_ALARM1_SECOND,
@@ -497,21 +523,19 @@ void DS3231::printAlarmType(AlarmType *type) {
 void DS3231::setSquareWave(uint8_t frequency) {
   // Set the frequency bits to first bit of DS3231_CONTROL
   uint8_t data = this->readRegister(DS3231_CONTROL);
-  data &= 0xFC; // 1111 1100 in binary is 0xFC, clear the frequency bits
-  data |= (unsigned int)frequency & 0x03; // Set the frequency bits
-  this->writeRegister(DS3231_CONTROL, data);
+	data &= 0xF9; // 0xF9 in binary is 1111 1001, clear the frequency bits
+	data |= frequency; // Set the frequency bits
+	this->writeRegister(DS3231_CONTROL, data);
 }
 
 void DS3231::enableSquareWave() {
-  // Set the INTCN bit to 0, 0x7F in binary is 0111 1111
-  this->writeRegister(DS3231_CONTROL,
-                      this->readRegister(DS3231_CONTROL) & 0x7F);
+  // Set the INTCN bit (bit 7) to 0
+	this->setBit(DS3231_CONTROL, 7, 0);
 }
 
 void DS3231::disableSquareWave() {
-  // Set the INTCN bit to 1, 0x80 in binary is 1000 0000
-  this->writeRegister(DS3231_CONTROL,
-                      this->readRegister(DS3231_CONTROL) | 0x80);
+  // Set the INTCN bit (bit 7) to 1
+	this->setBit(DS3231_CONTROL, 7, 1);
 }
 
 } // namespace EE513
